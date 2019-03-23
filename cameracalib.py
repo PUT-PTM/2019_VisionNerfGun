@@ -33,4 +33,9 @@ for fname in images:
     cv2.waitKey(3000)
 ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
 np.savez("calib", ret=ret, mtx=mtx, dist=dist, rvecs=rvecs, tvecs=tvecs)
+for fname in images:
+    img2 = cv2.imread(fname)
+    img2 = cv2.undistort(img2, mtx, dist)
+    cv2.imshow('undistored', img2)
+    cv2.waitKey(3000)
 cv2.destroyAllWindows()

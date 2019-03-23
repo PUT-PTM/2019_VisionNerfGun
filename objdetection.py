@@ -1,12 +1,14 @@
 import cv2
 import numpy as np
-from random import randint
 
 
 def nothing(x):
     pass
 
 
+file = np.load('calib.npz')
+mtx = file['mtx']
+dist = file['dist']
 # Create a black image, a window
 img = np.zeros((300, 512, 3), np.uint8)
 img2 = np.zeros((300, 512, 3), np.uint8)
@@ -30,16 +32,11 @@ cv2.createTrackbar(switch2, 'high',0,1,nothing)
 
 
 cap = cv2.VideoCapture(0)
-cap.set(3, 680)
-cap.set(4, 480)
+cap.set(3, 1280)
+cap.set(4, 720)
 key = ord('a')
 prev = (300, 200)
 next = prev
-high = np.array([120, 255, 255])
-low = np.array([0, 30, 140])
-wh = np.array([100, 255, 255])
-wl = np.array([0, 125, 150])
-firstFrame = None
 
 while key != ord('q'):
 
@@ -66,6 +63,8 @@ while key != ord('q'):
         img2[:] = [bh, gh, rh]
     # Capture frame-by-frame
     ret, frame = cap.read()
+    frame = cv2.undistort(frame, mtx, dist)
+
 
     if frame is not None:
         frame = cv2.medianBlur(frame, 5)
@@ -80,31 +79,12 @@ while key != ord('q'):
         mask = cv2.GaussianBlur(mask , (21, 21), 0)
         cv2.imshow('mask', mask)
 
-
-
-
-        # maskw = cv2.inRange(frame, wl, wh)
-        # mask = cv2.bilateralFilter(mask, 10, 75, 100)
-        # mask = cv2.addWeighted(mask, 0.5, maskw, 0.5, 0.0)
-
         gray = cv2.cvtColor(hsv, cv2.COLOR_BGR2GRAY)
         gray = cv2.medianBlur(gray, 5)
         print(gray.shape[::-1])
-
         res = cv2.bitwise_and(gray, gray, mask=mask)
-
-        if firstFrame is None:
-            firstFrame = gray
-            continue
-
-        #frameDelta = cv2.absdiff(firstFrame, gray)
-        #frameDelta = cv2.adaptiveThreshold(frameDelta, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-        #                             cv2.THRESH_BINARY_INV, 25, 2)
-        cv2.imshow('delta', res)
-
+        cv2.imshow('res', res)
         # Display the resulting frame
-        #cv2.imshow('gray', gray)
-
         cv2.imshow('hsv', hsv)
         res = cv2.GaussianBlur(res, (17, 17), 0)
         inputImage = res
