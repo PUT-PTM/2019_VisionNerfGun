@@ -1,10 +1,13 @@
 import cv2
 import numpy as np
-
+import serial
+import serial.tools.list_ports
+import time
 
 def nothing(x):
     pass
 
+ser = serial.Serial('COM100')
 
 file = np.load('calib.npz')
 mtx = file['mtx']
@@ -30,12 +33,9 @@ switch2 = '0 : OFF \n1 : ON'
 cv2.createTrackbar(switch, 'low',0,1,nothing)
 cv2.createTrackbar(switch2, 'high',0,1,nothing)
 
-
-cap = cv2.VideoCapture(0)
-cap.set(3, 1280)
-cap.set(4, 720)
+cap = cv2.VideoCapture(1)
 key = ord('a')
-prev = (300, 200)
+prev = (320, 240)
 next = prev
 
 while key != ord('q'):
@@ -61,12 +61,14 @@ while key != ord('q'):
         img2[:] = 0
     else:
         img2[:] = [bh, gh, rh]
+
     # Capture frame-by-frame
     ret, frame = cap.read()
-    frame = cv2.undistort(frame, mtx, dist)
+
 
 
     if frame is not None:
+        frame = cv2.undistort(frame, mtx, dist)
         frame = cv2.medianBlur(frame, 5)
         cv2.imshow('frame', frame)
         # Our operations on the frame come here
@@ -81,12 +83,11 @@ while key != ord('q'):
 
         gray = cv2.cvtColor(hsv, cv2.COLOR_BGR2GRAY)
         gray = cv2.medianBlur(gray, 5)
-        print(gray.shape[::-1])
         res = cv2.bitwise_and(gray, gray, mask=mask)
         cv2.imshow('res', res)
         # Display the resulting frame
         cv2.imshow('hsv', hsv)
-        res = cv2.GaussianBlur(res, (17, 17), 0)
+        qres = cv2.GaussianBlur(res, (17, 17), 0)
         inputImage = res
         rows = inputImage.shape[0]
         circles = cv2.HoughCircles(inputImage, cv2.HOUGH_GRADIENT, 1, rows * 2, param1=60, param2=50, minRadius=30,
@@ -98,19 +99,22 @@ while key != ord('q'):
             cv2.arrowedLine(frame, prev, center, (255, 255, 0), 3)
             cv2.circle(frame, center, 1, (0, 100, 100), 3)
             radius = i[2]
+            movx = center[0]/6.1
+            movx += 75
+            movy = center[1]/6.1
+            movy += 75
+            print(ser.write(ascii(movx).encode()))
             cv2.circle(frame, center, radius, (0, 255, 255), 3)
-            cv2.arrowedLine(frame, (640, 360), center, (0, 0, 255), 3)
+            cv2.arrowedLine(frame, (320, 240), center, (0, 0, 255), 3)
             x = int(prev[0]) - int(center[0])
             y = int(prev[1]) - int(center[1])
             x = -x
             y = -y
-            print(x)
-            print(y)
             next = (int(center[0]) + x, int(center[1]) + y)
             prev = center
             cv2.arrowedLine(frame, center, next, (0, 255, 0), 3)
             cv2.imshow('frame', frame)
 
-    key = cv2.waitKey(50)
+    key = cv2.waitKey(30)
 
 cv2.destroyAllWindows()
