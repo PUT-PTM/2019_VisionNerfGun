@@ -74,6 +74,8 @@
 
 /* Private variables ---------------------------------------------------------*/
 TIM_HandleTypeDef htim4;
+int sum, x, y;
+
 
 /* USER CODE BEGIN PV */
 uint8_t ReceivedData[16]; // Tablica przechowujaca odebrane dane, sa to dwa znaki ASCII zapisane binarnie
@@ -116,6 +118,7 @@ int main(void)
 
   /* Configure the system clock */
   SystemClock_Config();
+
   /* USER CODE BEGIN SysInit */
 
   /* USER CODE END SysInit */
@@ -126,37 +129,37 @@ int main(void)
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
+  HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  int sum, x, y;
   while (1)
-  {
+    {
 
-	  if(ReceivedDataFlag == 1){
-	  	  	 ReceivedDataFlag = 0;
-	  	  	 for(int i = 0; i < 8; i++)	// Dzielenie na wspolrzedna X i Y
-	  	  	 {
-	  	  		 Xcoord[i] = ReceivedData[i];
-	  	  		 Ycoord[i+8] = ReceivedData[i+8];
-	  	  	 }
+  	  if(ReceivedDataFlag == 1){
+  	  	  	 ReceivedDataFlag = 0;
+  	  	  	 for(int i = 0; i < 8; i++)	// Dzielenie na wspolrzedna X i Y
+  	  	  	 {
+  	  	  		 Xcoord[i] = ReceivedData[i];
+  	  	  		 Ycoord[i+8] = ReceivedData[i+8];
+  	  	  	 }
 
-	  	  	 sscanf(Xcoord, "%d", &x);
-	  	  	 sscanf(Ycoord, "%d", &y);
-	  	  	 sum = x + y;
-	  	  	 if(sum < 255){
-	  	  		 for(int t =0; t<300;t++){
-	  	  		 HAL_GPIO_WritePin(GPIOD,GPIO_PIN_13,GPIO_PIN_SET);
-	  	  		 }
-	  	  		 HAL_GPIO_WritePin(GPIOD,GPIO_PIN_13,GPIO_PIN_RESET);
-	  	  		 }
-	  	   TIM4->CCR1 = x;
-	  	   // Tutaj drugi PWM ustawiany y
+  	  	  	 sscanf(Xcoord, "%d", &x);
+  	  	  	 sscanf(Ycoord, "%d", &y);
+  	  	  	 sum = x + y;
+  	  	  	 if(sum < 255){
+  	  	  		 for(int t =0; t<300;t++){
+  	  	  		 HAL_GPIO_WritePin(GPIOD,GPIO_PIN_13,GPIO_PIN_SET);
+  	  	  		 }
+  	  	  		 HAL_GPIO_WritePin(GPIOD,GPIO_PIN_13,GPIO_PIN_RESET);
+  	  	  		 }
+  	  	   TIM4->CCR1 = x;
+  	  	   TIM4->CCR3 = y;// Tutaj drugi PWM ustawiany y
 
 
 
-	  	  	}
+  	  	  	}
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -254,6 +257,10 @@ static void MX_TIM4_Init(void)
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
   {
     Error_Handler();
   }
