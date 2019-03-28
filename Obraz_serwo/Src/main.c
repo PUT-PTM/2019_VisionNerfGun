@@ -74,9 +74,11 @@
 
 /* Private variables ---------------------------------------------------------*/
 TIM_HandleTypeDef htim4;
-int sum =0;
+
 /* USER CODE BEGIN PV */
-uint8_t ReceivedData[16]; // Tablica przechowujaca odebrane dane
+uint8_t ReceivedData[16]; // Tablica przechowujaca odebrane dane, sa to dwa znaki ASCII zapisane binarnie
+uint8_t Xcoord[8];		  // Tablica ktora bedzie zawierac pierwsza polowe danych czyli pierwszy znak ASCII oznaczajacy X
+uint8_t Ycoord[8];		  // Tablica ktora bedzie zawierac druga polowe danych czyli drugi znak ASCII oznaczajacy Y
 uint8_t ReceivedDataFlag = 0; // Flaga informujaca o odebraniu danych
 /* USER CODE END PV */
 
@@ -114,7 +116,6 @@ int main(void)
 
   /* Configure the system clock */
   SystemClock_Config();
-
   /* USER CODE BEGIN SysInit */
 
   /* USER CODE END SysInit */
@@ -129,19 +130,29 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  int sum, x, y;
   while (1)
   {
 
 	  if(ReceivedDataFlag == 1){
 	  	  	 ReceivedDataFlag = 0;
-	  	  	 sscanf(ReceivedData, "%d", &sum);
+	  	  	 for(int i = 0; i < 8; i++)	// Dzielenie na wspolrzedna X i Y
+	  	  	 {
+	  	  		 Xcoord[i] = ReceivedData[i];
+	  	  		 Ycoord[i+8] = ReceivedData[i+8];
+	  	  	 }
+
+	  	  	 sscanf(Xcoord, "%d", &x);
+	  	  	 sscanf(Ycoord, "%d", &y);
+	  	  	 sum = x + y;
 	  	  	 if(sum < 255){
 	  	  		 for(int t =0; t<300;t++){
 	  	  		 HAL_GPIO_WritePin(GPIOD,GPIO_PIN_13,GPIO_PIN_SET);
 	  	  		 }
 	  	  		 HAL_GPIO_WritePin(GPIOD,GPIO_PIN_13,GPIO_PIN_RESET);
 	  	  		 }
-	  	   TIM4->CCR1 = sum;
+	  	   TIM4->CCR1 = x;
+	  	   // Tutaj drugi PWM ustawiany y
 
 
 

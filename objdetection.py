@@ -7,7 +7,7 @@ import time
 def nothing(x):
     pass
 
-ser = serial.Serial('COM100')
+#ser = serial.Serial('COM100')
 
 file = np.load('calib.npz')
 mtx = file['mtx']
@@ -33,7 +33,7 @@ switch2 = '0 : OFF \n1 : ON'
 cv2.createTrackbar(switch, 'low',0,1,nothing)
 cv2.createTrackbar(switch2, 'high',0,1,nothing)
 
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 key = ord('a')
 prev = (320, 240)
 next = prev
@@ -68,6 +68,7 @@ while key != ord('q'):
 
 
     if frame is not None:
+        frame = cv2.flip(frame, 1)
         frame = cv2.undistort(frame, mtx, dist)
         frame = cv2.medianBlur(frame, 5)
         cv2.imshow('frame', frame)
@@ -82,6 +83,7 @@ while key != ord('q'):
         cv2.imshow('mask', mask)
 
         gray = cv2.cvtColor(hsv, cv2.COLOR_BGR2GRAY)
+
         gray = cv2.medianBlur(gray, 5)
         res = cv2.bitwise_and(gray, gray, mask=mask)
         cv2.imshow('res', res)
@@ -101,9 +103,11 @@ while key != ord('q'):
             radius = i[2]
             movx = center[0]/6.1
             movx += 75
-            movy = center[1]/6.1
+            movy = center[1]/4.6
             movy += 75
-            print(ser.write(ascii(movx).encode()))
+            data_to_send = ascii(int(movx)) + ascii(int(movy))
+            #print(data_to_send.encode())
+            #print(ser.write(data_to_send.encode()))
             cv2.circle(frame, center, radius, (0, 255, 255), 3)
             cv2.arrowedLine(frame, (320, 240), center, (0, 0, 255), 3)
             x = int(prev[0]) - int(center[0])
