@@ -93,8 +93,8 @@
 /* USER CODE BEGIN PRIVATE_DEFINES */
 /* Define size for the receive and transmit buffer over CDC */
 /* It's up to user to redefine and/or remove those define */
-#define APP_RX_DATA_SIZE  16
-#define APP_TX_DATA_SIZE  16
+#define APP_RX_DATA_SIZE  4
+#define APP_TX_DATA_SIZE  4
 /* USER CODE END PRIVATE_DEFINES */
 
 /**
@@ -295,12 +295,12 @@ static int8_t CDC_Receive_FS(uint8_t* Buf, uint32_t *Len)
 		  USBD_CDC_ReceivePacket(&hUsbDeviceFS);
 
 		  // Zmienne zadeklarowane w pliku main.c
-		    extern uint8_t ReceivedData[16]; // Tablica przechowujaca odebrane dane
+		    extern uint8_t ReceivedData[4]; // Tablica przechowujaca odebrane dane
 		    extern uint8_t ReceivedDataFlag; // Flaga informujaca o odebraniu danych
 
 		    // Wyczyszczenie tablicy odebranych danych
 		    uint8_t iter;
-		    for(iter = 0; iter<16; ++iter){
+		    for(iter = 0; iter<4; ++iter){
 		     ReceivedData[iter] = 0;
 		    }
 
