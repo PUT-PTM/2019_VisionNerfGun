@@ -7,7 +7,9 @@ import time
 def nothing(x):
     pass
 
-#ser = serial.Serial('COM100')
+string = ''
+
+ser = serial.Serial('COM100')
 
 file = np.load('calib.npz')
 mtx = file['mtx']
@@ -80,7 +82,7 @@ while key != ord('q'):
         #mask = cv2.inRange(frame, wl, wh)
         mask = cv2.inRange(hsv, np.array([b, g, r]), np.array([bh, gh, rh]))
         mask = cv2.GaussianBlur(mask , (21, 21), 0)
-        cv2.imshow('mask', mask)
+        #cv2.imshow('mask', mask)
 
         gray = cv2.cvtColor(hsv, cv2.COLOR_BGR2GRAY)
 
@@ -102,12 +104,17 @@ while key != ord('q'):
             cv2.circle(frame, center, 1, (0, 100, 100), 3)
             radius = i[2]
             movx = center[0]/6.1
-            movx += 75
+
             movy = center[1]/4.6
-            movy += 75
-            data_to_send = ascii(int(movx)) + ascii(int(movy))
-            #print(data_to_send.encode())
-            #print(ser.write(data_to_send.encode()))
+            string +=  ascii(int(movx))
+            string += ascii(int(movy))
+            print(string)
+
+            data_to_send = string.encode()
+            print(data_to_send)
+            print(ser.write(data_to_send))
+            #print(ser.write(ascii(int(movx)).encode()))
+            string = ''
             cv2.circle(frame, center, radius, (0, 255, 255), 3)
             cv2.arrowedLine(frame, (320, 240), center, (0, 0, 255), 3)
             x = int(prev[0]) - int(center[0])
@@ -121,4 +128,5 @@ while key != ord('q'):
 
     key = cv2.waitKey(30)
 
+ser.write('0000'.encode())
 cv2.destroyAllWindows()
