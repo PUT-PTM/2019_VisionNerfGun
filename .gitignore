@@ -198,5 +198,15 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+.Obraz_serwo/settings
+.Obraz_serwo/Debug
+.Obraz_serwo/Drivers
+.Obraz_serwo/Middlewares
+.Obraz_serwo/.mxproject
+.Obraz_serwo/New_configuration.cfg
+.Obraz_serwo/Obraz_serwo_Run.cfg
 
+
+
+.idea/
 # End of https://www.gitignore.io/api/c,c++,python
