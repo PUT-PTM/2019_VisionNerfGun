@@ -12,16 +12,19 @@ def nothing(x):
 string = ''
 
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(1)
 key = ord('-')
 prev = (320, 240)
 next = prev
 while key != ord('q'):
 
     ret, frame = cap.read()
+    wh = np.size(frame, 0)
+    ww = np.size(frame, 1)
+
     if frame is not None:
         frame = cv2.flip(frame, 1)
-        cv2.imshow('hello', frame)
+        cv2.imshow('frame', frame)
     key = cv2.waitKey(60)
 
     if key == ord('v'):
@@ -82,25 +85,24 @@ while key != ord('q'):
             # Draw and display the corners
             cv2.drawChessboardCorners(img, (6, 9), corners2, ret)
             cv2.imshow('img', img)
-            cv2.waitKey(3000)
+            cv2.waitKey(500)
         ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
         np.savez("calib", ret=ret, mtx=mtx, dist=dist, rvecs=rvecs, tvecs=tvecs)
+        fov = cv2.calibrationMatrixValues(mtx, gray.shape[:2], )
         cv2.destroyAllWindows()
 
     if key == ord('a'):
 
         ser = serial.Serial('COM100')
 
-        file = np.load('*.npz')
+        file = np.load('callib.npz')
         mtx = file['mtx']
         dist = file['dist']
-
 
         img = np.zeros((300, 512, 3), np.uint8)
         img2 = np.zeros((300, 512, 3), np.uint8)
         cv2.namedWindow('low')
         cv2.namedWindow('high')
-
 
         cv2.createTrackbar('r', 'low', 0, 255, nothing)
         cv2.createTrackbar('g', 'low', 0, 255, nothing)
@@ -144,13 +146,11 @@ while key != ord('q'):
 
             if frame is not None:
                 frame = cv2.flip(frame, 1)
-                # frame = cv2.undistort(frame, mtx, dist)
+                frame = cv2.undistort(frame, mtx, dist)
                 frame = cv2.medianBlur(frame, 5)
                 cv2.imshow('frame', frame)
-                # Our operations on the frame come here
                 hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
                 # cv2.imshow('hsv', hsv)
-
                 # hsv = cv2.bilateralFilter(hsv, 10, 75, 270)
                 # mask = cv2.inRange(frame, wl, wh)
                 mask = cv2.inRange(hsv, np.array([b, g, r]), np.array([bh, gh, rh]))
@@ -204,7 +204,7 @@ while key != ord('q'):
     if key == ord('m'):
 
         center = (320, 240)
-        ser = serial.Serial('COM100')
+        #ser = serial.Serial('COM100')
 
         file = np.load('calib.npz')
         mtx = file['mtx']
@@ -213,28 +213,28 @@ while key != ord('q'):
         while key != ord('q'):
             x = center[0]
             y = center[1]
-            # Capture frame-by-frame
-            if key == ord('8'):
+            if key == ord('o'):
                 center = (x, y - 2)
-            if key == ord('2'):
+            if key == ord('l'):
                 center = (x, y + 2)
-            if key == ord('4'):
+            if key == ord('k'):
                 center = (x - 2, y)
-            if key == ord('6'):
+            if key == ord(';'):
                 center = (x + 2, y)
             ret, frame = cap.read()
+            frame = cv2.undistort(frame, mtx, dist)
             if frame is not None:
                 frame = cv2.flip(frame, 1)
 
                 if key == ord('0'):
-                    movx = center[0] / 6.1
-                    movy = center[1] / 4.6
+                    movx = center[0] / (180 / 0.44)
+                    movy = center[1] / (180 / 0.44)
                     string += ascii(int(movx))
                     string += ascii(int(movy))
                     # print(string)
-                    data_to_send = string.encode()
+                    #data_to_send = string.encode()
                     # print(data_to_send)
-                    print(ser.write(data_to_send))
+                    #print(ser.write(data_to_send))
                     # print(ser.write(ascii(int(movx)).encode()))
                     print('BANG!')
                 string = ''
@@ -242,6 +242,65 @@ while key != ord('q'):
                 cv2.imshow('frame', frame)
 
             key = cv2.waitKey(50)
+    if key == ord('s'):
+        lewa, prawa, gora, dol = None
+        ser = serial.Serial('COM100')
+
+        file = np.load('calib.npz')
+        mtx = file['mtx']
+        dist = file['dist']
+        x = 75;
+        y = 75;
+        i = 0
+        while key != ord('q') or i != 8:
+
+            # Capture frame-by-frame
+            if key == ord('o'):
+                center = (x, y - 1)
+            if key == ord('l'):
+                center = (x, y + 1)
+            if key == ord('k'):
+                center = (x - 1, y)
+            if key == ord(';'):
+                center = (x + 1, y)
+            ret, frame = cap.read()
+            frame = cv2.undistort(frame, mtx, dist)
+            if frame is not None:
+                frame = cv2.flip(frame, 1)
+
+                if key == ord('`'):
+                    movx = center[0]
+                    movy = center[1]
+                    string += ascii(int(movx))
+                    string += ascii(int(movy))
+                    # print(string)
+                    data_to_send = string.encode()
+                    # print(data_to_send)
+                    print(ser.write(data_to_send))
+                    # print(ser.write(ascii(int(movx)).encode()))
+                string = ''
+
+                cv2.imshow('frame', frame)
+            if (i == 1):
+                lewa = x
+                i += 1
+            if (i == 3):
+                gora = y
+                i += 1
+            if(i == 5):
+                prawa = x
+                i += 1
+            if(i == 7):
+                dol = y
+                i += 1
+
+            key = cv2.waitKey(50)
+        vertical = dol - gora
+        horizontal = prawa - lewa
+        file = open('fov.txt', 'w')
+
+        file.write(str(horizontal)+'\n'+str(vertical))
+
 
 # ser.write('0000'.encode())
 cv2.destroyAllWindows()
