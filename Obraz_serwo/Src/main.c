@@ -127,12 +127,22 @@ int main(void)
   /* USER CODE BEGIN 2 */
   HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);
+  HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
     {
+	  int i = 50;
+	  while(1){
+		  TIM4->CCR4 = i;
+		  HAL_Delay(50);
+		  i++;
+		  if(i == 150){
+			  i=50;
+		  }
+	  }
 	  if(ReceivedDataFlag == 1){
  	  	  	 ReceivedDataFlag = 0;
  	  	  	 for(int i = 0; i < 2; i++)	// Dzielenie na wspolrzedna X i Y
@@ -144,13 +154,9 @@ int main(void)
  	  	  	 sscanf(Xcoord, "%d", &x);
  	  	  	 sscanf(Ycoord, "%d", &y);
  	  	  	 sum = x + y;
- 	  	  	 if(sum < 255){
- 	  	  		 for(int t =0; t<300;t++){
- 	  	  		 HAL_GPIO_WritePin(GPIOD,GPIO_PIN_13,GPIO_PIN_SET);
- 	  	  		 }
- 	  	  		 HAL_GPIO_WritePin(GPIOD,GPIO_PIN_13,GPIO_PIN_RESET);
- 	  	  		 }
+
  	  	  TIM4->CCR3 = round(y*0.44)+36;
+
  	  	  TIM4->CCR1 = round(x*0.44)+36;
  	  	   	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
  	  	  	  HAL_Delay(5000);
@@ -264,6 +270,10 @@ static void MX_TIM4_Init(void)
   {
     Error_Handler();
   }
+  if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
+  {
+    Error_Handler();
+  }
   /* USER CODE BEGIN TIM4_Init 2 */
 
   /* USER CODE END TIM4_Init 2 */
@@ -288,22 +298,12 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_RESET);
-
   /*Configure GPIO pin : PA7 */
   GPIO_InitStruct.Pin = GPIO_PIN_7;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : PD13 */
-  GPIO_InitStruct.Pin = GPIO_PIN_13;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
 }
 
