@@ -74,8 +74,6 @@
 
 /* Private variables ---------------------------------------------------------*/
 TIM_HandleTypeDef htim4;
-int sum, x, y;
-
 
 /* USER CODE BEGIN PV */
 uint8_t ReceivedData[4]; // Tablica przechowujaca odebrane dane, sa to dwa znaki ASCII zapisane binarnie
@@ -89,12 +87,11 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_TIM4_Init(void);
 /* USER CODE BEGIN PFP */
-
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+int sum , x ,y;
 /* USER CODE END 0 */
 
 /**
@@ -136,34 +133,37 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
     {
+	  if(ReceivedDataFlag == 1){
+ 	  	  	 ReceivedDataFlag = 0;
+ 	  	  	 for(int i = 0; i < 2; i++)	// Dzielenie na wspolrzedna X i Y
+ 	  	  	 {
+ 	  	  		 Xcoord[i] = ReceivedData[i];
+ 	  	  		 Ycoord[i] = ReceivedData[i+2];
+ 	  	  	 }
 
-  	  if(ReceivedDataFlag == 1){
-  	  	  	 ReceivedDataFlag = 0;
-  	  	  	 for(int i = 0; i < 2; i++)	// Dzielenie na wspolrzedna X i Y
-  	  	  	 {
-  	  	  		 Xcoord[i] = ReceivedData[i];
-  	  	  		 Ycoord[i] = ReceivedData[i+2];
-  	  	  	 }
-
-  	  	  	 sscanf(Xcoord, "%d", &x);
-  	  	  	 sscanf(Ycoord, "%d", &y);
-  	  	  	 sum = x + y;
-  	  	  	 if(sum < 255){
-  	  	  		 for(int t =0; t<300;t++){
-  	  	  		 HAL_GPIO_WritePin(GPIOD,GPIO_PIN_13,GPIO_PIN_SET);
-  	  	  		 }
-  	  	  		 HAL_GPIO_WritePin(GPIOD,GPIO_PIN_13,GPIO_PIN_RESET);
-  	  	  		 }
-  	  	   TIM4->CCR1 = x+60;
-  	  	   TIM4->CCR3 = y+60;// Tutaj drugi PWM ustawiany y
+ 	  	  	 sscanf(Xcoord, "%d", &x);
+ 	  	  	 sscanf(Ycoord, "%d", &y);
+ 	  	  	 sum = x + y;
+ 	  	  	 if(sum < 255){
+ 	  	  		 for(int t =0; t<300;t++){
+ 	  	  		 HAL_GPIO_WritePin(GPIOD,GPIO_PIN_13,GPIO_PIN_SET);
+ 	  	  		 }
+ 	  	  		 HAL_GPIO_WritePin(GPIOD,GPIO_PIN_13,GPIO_PIN_RESET);
+ 	  	  		 }
+ 	  	  TIM4->CCR3 = round(y*0.44)+36;
+ 	  	  TIM4->CCR1 = round(x*0.44)+36;
+ 	  	   	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
+ 	  	  	  HAL_Delay(5000);
+ 	  	  	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);
+ 	  	  	  HAL_Delay(1000);
 
 
+ 	  	  	}
 
-  	  	  	}
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-  }
+    }
   /* USER CODE END 3 */
 }
 
@@ -229,7 +229,7 @@ static void MX_TIM4_Init(void)
 
   /* USER CODE END TIM4_Init 1 */
   htim4.Instance = TIM4;
-  htim4.Init.Prescaler = 999;
+  htim4.Init.Prescaler = 1439;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim4.Init.Period = 999;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -253,7 +253,7 @@ static void MX_TIM4_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 0;
+  sConfigOC.Pulse = 500;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim4, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
@@ -282,11 +282,21 @@ static void MX_GPIO_Init(void)
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOH_CLK_ENABLE();
-  __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : PA7 */
+  GPIO_InitStruct.Pin = GPIO_PIN_7;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PD13 */
   GPIO_InitStruct.Pin = GPIO_PIN_13;
