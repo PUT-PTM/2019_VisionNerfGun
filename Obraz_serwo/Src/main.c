@@ -91,7 +91,7 @@ static void MX_TIM4_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-int sum , x ,y;
+int x ,y;
 /* USER CODE END 0 */
 
 /**
@@ -127,22 +127,12 @@ int main(void)
   /* USER CODE BEGIN 2 */
   HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_1);
   HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_3);
-  HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL_4);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
     {
-	  int i = 50;
-	  while(1){
-		  TIM4->CCR4 = i;
-		  HAL_Delay(50);
-		  i++;
-		  if(i == 150){
-			  i=50;
-		  }
-	  }
 	  if(ReceivedDataFlag == 1){
  	  	  	 ReceivedDataFlag = 0;
  	  	  	 for(int i = 0; i < 2; i++)	// Dzielenie na wspolrzedna X i Y
@@ -150,20 +140,14 @@ int main(void)
  	  	  		 Xcoord[i] = ReceivedData[i];
  	  	  		 Ycoord[i] = ReceivedData[i+2];
  	  	  	 }
-
  	  	  	 sscanf(Xcoord, "%d", &x);
  	  	  	 sscanf(Ycoord, "%d", &y);
- 	  	  	 sum = x + y;
-
- 	  	  TIM4->CCR3 = round(y*0.44)+36;
-
- 	  	  TIM4->CCR1 = round(x*0.44)+36;
- 	  	   	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
- 	  	  	  HAL_Delay(5000);
- 	  	  	  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);
- 	  	  	  HAL_Delay(1000);
-
-
+ 	  	  	 TIM4->CCR3 = round(y*0.44)+60;
+ 	  	  	 TIM4->CCR1 = round(x*0.44)+60;
+ 	  	   	 /*HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
+ 	  	  	 HAL_Delay(5000);
+ 	  	  	 HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);
+ 	  	  	 HAL_Delay(1000);*/
  	  	  	}
 
     /* USER CODE END WHILE */
