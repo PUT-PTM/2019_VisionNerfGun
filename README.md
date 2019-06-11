@@ -18,25 +18,33 @@ Equipment we used:
 * 1x Servo motor sg90
 * 2x Servo motors mg996r
 * Creative hd 720p camera
-* NerfGun Stryfe
+* NerfGun Stryfe (in fact, any electric NerfGun will do)
 
 ## Tools 
 * We use [STM32CubeMX](https://www.st.com/en/development-tools/stm32cubemx.html) as Code generator , and Eclipse with [SW4STM32](https://www.st.com/en/development-tools/sw4stm32.html)
 * Vision part is created with [Python 3.7](https://www.python.org/downloads/release/python-370/) + [OpenCv](https://opencv.org/) using [Pycharm](https://www.jetbrains.com/pycharm/)
 
-## How to use
+## How to use?
 * Download VisionNerfGun
+* Download and install needed plugins listed in *setup.py* into your Python environment.
 * Plug-in device and load the C program on it.
 * Connect servos to power source, and connect pan servo to PD12 pin, tilt servo to PD14 pin, and trigger servo to PD15 
 * Check on what port you are using Virtual ComPort, and change it in the Python project
 * Use the objdetection.py program, and select:
-  * (c) for calibrating your camera,
+  * (c) for calibrating your camera via saved chessboard images in chessboards directory,
+  * (v) for calibrating your camera via live stream from camera,
   * (m) for controll panel for steering manualy,
-  * (a) for automatic use.
+  * (a) for automatic use,
+  * (q) to quit.
+  
+## Notice!
+The image resolution and FOV can vary between cameras, this may cause rifle in real space misaligned.
+Also chessboard fields can be different in lenght (in project 1,3mm) and in amount of fields, this may cause calibration to be incorrect or impossible.
+Data after calibration is saved on disk as *calib.npz* and can later be used.
 
 ## Future improvements
 * Custom NerfGun
-* Stronger servo to work with trigger 
+* Stronger servo to improve the action with trigger
 
 ## License
 MIT License 
