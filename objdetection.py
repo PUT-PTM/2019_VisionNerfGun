@@ -27,10 +27,11 @@ while key != ord('q'):
     key = cv2.waitKey(60)
 
     if key == ord('v'):
+        objpoints = []
+        imgpoints = []
         while key != ord('q'):
-            cap = cv2.VideoCapture(1)
             ret, img = cap.read()
-            if img is not None:
+            if img is not None or key != ord('q'):
                 criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
                 objp = np.zeros((9 * 6, 3), np.float32)
@@ -50,7 +51,7 @@ while key != ord('q'):
                     # Draw and display the corners
                     cv2.drawChessboardCorners(img, (6, 9), corners2, ret)
                 cv2.imshow('img', img)
-                key = cv2.waitKey(2000)
+                key = cv2.waitKey(3000)
             ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
             np.savez("calib", ret=ret, mtx=mtx, dist=dist, rvecs=rvecs, tvecs=tvecs)
             cv2.destroyAllWindows()
@@ -175,8 +176,8 @@ while key != ord('q'):
                     cv2.arrowedLine(frame, prev, center, (255, 255, 0), 3)
                     cv2.circle(frame, center, 1, (0, 100, 100), 3)
                     radius = i[2]
-                    movx = center[0] / 8.77
-                    movy = center[1] / 9
+                    movx = center[0] / 9.77
+                    movy = center[1] / 10
                     if movx < 10: string += '0'
                     string += ascii(int(movx))
                     if movy < 10: string += '0'
@@ -226,8 +227,8 @@ while key != ord('q'):
                 frame = cv2.flip(frame, 1)
 
                 if key == ord('0'):
-                    movx = center[0] / 8.77
-                    movy = center[1] / 9
+                    movx = center[0] / 9.77
+                    movy = center[1] / 10
                     if movx < 10 : string+='0'
                     string += ascii(int(movx))
                     if movy < 10: string += '0'
@@ -243,65 +244,5 @@ while key != ord('q'):
                 cv2.imshow('frame', frame)
 
             key = cv2.waitKey(50)
-    # if key == ord('s'):
-    #     lewa = prawa = gora = dol = None
-    #     ser = serial.Serial('COM10')
-    #     center = (0, 0)
-    #     file = np.load('calib.npz')
-    #     mtx = file['mtx']
-    #     dist = file['dist']
-    #     x = 75;
-    #     y = 75;
-    #     i = 0
-    #     while key != ord('q') or i != 8:
-    #
-    #         # Capture frame-by-frame
-    #         if key == ord('o'):
-    #             center = (x, y - 10)
-    #         if key == ord('l'):
-    #             center = (x, y + 10)
-    #         if key == ord('k'):
-    #             center = (x - 10, y)
-    #         if key == ord(';'):
-    #             center = (x + 10, y)
-    #         ret, frame = cap.read()
-    #         frame = cv2.undistort(frame, mtx, dist)
-    #         if frame is not None:
-    #             frame = cv2.flip(frame, 1)
-    #
-    #             if key == ord('`'):
-    #                 movx = center[0]
-    #                 movy = center[1]
-    #                 string += ascii(int(movx))
-    #                 string += ascii(int(movy))
-    #                 # print(string)
-    #                 data_to_send = string.encode()
-    #                 print(data_to_send)
-    #                 print(ser.write(data_to_send))
-    #                 # print(ser.write(ascii(int(movx)).encode()))
-    #             string = ''
-    #
-    #             cv2.imshow('frame', frame)
-    #         if (i == 1):
-    #             lewa = x
-    #             i += 1
-    #         if (i == 3):
-    #             gora = y
-    #             i += 1
-    #         if(i == 5):
-    #             prawa = x
-    #             i += 1
-    #         if(i == 7):
-    #             dol = y
-    #             i += 1
-    #
-    #         key = cv2.waitKey(50)
-    #     vertical = dol - gora
-    #     horizontal = prawa - lewa
-    #     file = open('fov.txt', 'w')
-    #
-    #     file.write(str(horizontal)+'\n'+str(vertical))
-
-
-# ser.write('0000'.encode())
+    
 cv2.destroyAllWindows()
